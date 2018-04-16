@@ -1,4 +1,4 @@
-NAME=shedbuilt-base-layout
-VERSION=9
+NAME=base-layout
+VERSION=1
 REVISION=1
 STRIP=no
