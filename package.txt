@@ -2,3 +2,5 @@ NAME=base-layout
 VERSION=1
 REVISION=1
 STRIP=no
+OPTIONS=bootstrap|release
+DEFAULTS=release

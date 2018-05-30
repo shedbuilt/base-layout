@@ -1,9 +1,5 @@
 #!/bin/bash
-if [ "$SHED_BUILD_MODE" == 'toolchain' ]; then
-    echo "The base layout package should not be built in toolchain mode."
-    return 1
-fi
-
+declare -A SHED_PKG_LOCAL_OPTIONS=${SHED_PKG_OPTIONS_ASSOC}
 # Create essential directories, files and symlinks (from LFS 8.1)
 mkdir -pv "${SHED_FAKE_ROOT}"/{bin,boot,etc/{opt,sysconfig},home,lib/firmware,mnt,opt}
 # Create placeholder 64-bit library folder
@@ -40,8 +36,7 @@ install -v -m644 "${SHED_PKG_CONTRIB_DIR}/fstab" "${SHED_FAKE_ROOT}/usr/share/de
 # Default login prompt config
 install -v -m644 "${SHED_PKG_CONTRIB_DIR}/issue" "${SHED_FAKE_ROOT}/usr/share/defaults/etc"
 
-case "$SHED_BUILD_MODE" in
-    bootstrap)
+if [ -n "${SHED_PKG_LOCAL_OPTIONS[bootstrap]}" ]; then
         # Install default users and groups
         install -v -m644 "${SHED_PKG_CONTRIB_DIR}/passwd" "${SHED_FAKE_ROOT}/etc"
         install -v -m644 "${SHED_PKG_CONTRIB_DIR}/group" "${SHED_FAKE_ROOT}/etc"
@@ -55,22 +50,21 @@ case "$SHED_BUILD_MODE" in
         ln -sv /tools/bin/{env,install,perl} "${SHED_FAKE_ROOT}/usr/bin"
         ln -sv /tools/lib/libgcc_s.so{,.1} "${SHED_FAKE_ROOT}/usr/lib"
         ln -sv /tools/lib/libstdc++.{a,so{,.6}} "${SHED_FAKE_ROOT}/usr/lib"
-        for SHDPKG_LIB in blkid lzma mount uuid
+        for SHED_PKG_LOCAL_LIB in blkid lzma mount uuid
         do
-            ln -sv /tools/lib/lib${SHDPKG_LIB}.so* "${SHED_FAKE_ROOT}/usr/lib"
+            ln -sv /tools/lib/lib${SHED_PKG_LOCAL_LIB}.so* "${SHED_FAKE_ROOT}/usr/lib"
         done
         ln -svf /tools/include/blkid "${SHED_FAKE_ROOT}/usr/include"
         ln -svf /tools/include/libmount "${SHED_FAKE_ROOT}/usr/include"
         ln -svf /tools/include/uuid "${SHED_FAKE_ROOT}/usr/include"
         install -vdm755 "${SHED_FAKE_ROOT}/usr/lib/pkgconfig"
-        for SHDPKG_LIB in blkid mount uuid
+        for SHED_PKG_LOCAL_LIB in blkid mount uuid
         do
-            sed 's@tools@usr@g' /tools/lib/pkgconfig/${SHDPKG_LIB}.pc \
-                > "${SHED_FAKE_ROOT}/usr/lib/pkgconfig/${SHDPKG_LIB}.pc"
+            sed 's@tools@usr@g' /tools/lib/pkgconfig/${SHED_PKG_LOCAL_LIB}.pc \
+                > "${SHED_FAKE_ROOT}/usr/lib/pkgconfig/${SHED_PKG_LOCAL_LIB}.pc"
         done
         ln -sv bash "${SHED_FAKE_ROOT}/bin/sh"
-        ;;
-    release)
+else
         # NOTE: In 'bootstrap' this is done as a post-install step because we need
         # to install /etc/group for 'utmp' and to be found. In 'release' we do
         # this during the build instead because it will only be built from system
@@ -78,6 +72,4 @@ case "$SHED_BUILD_MODE" in
         # without bash and its dependencies being available, which running the
         # post-install would require.
         chgrp -v utmp "${SHED_FAKE_ROOT}/var/log/lastlog"
-        ;;
-esac
-
+fi
