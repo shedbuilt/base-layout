@@ -1,7 +1,7 @@
 #!/bin/bash
 declare -A SHED_PKG_LOCAL_OPTIONS=${SHED_PKG_OPTIONS_ASSOC}
 # Create essential directories, files and symlinks (from LFS 8.1)
-mkdir -pv "${SHED_FAKE_ROOT}"/{bin,boot,etc/{opt,sysconfig},home,lib/firmware,mnt,opt}
+mkdir -pv "${SHED_FAKE_ROOT}"/{bin,boot,etc/{opt,sysconfig,skel},home,lib/firmware,mnt,opt}
 # Create placeholder 64-bit library folder
 if [[ $SHED_NATIVE_TARGET =~ ^aarch64-.* ]]; then
     mkdir -v "${SHED_FAKE_ROOT}/lib64"
@@ -24,8 +24,10 @@ ln -sv /proc/self/mounts "${SHED_FAKE_ROOT}/etc/mtab" &&
 # Distribution info and LSB compliance
 install -v -m644 "${SHED_PKG_CONTRIB_DIR}/os-release" "${SHED_FAKE_ROOT}/etc" &&
 install -v -m644 "${SHED_PKG_CONTRIB_DIR}/lsb-release" "${SHED_FAKE_ROOT}/etc" &&
+# Basic user skeleton
+install -vdm755 "${SHED_FAKE_ROOT}/etc/skel/.config" &&
 # Default users and groups
-install -dm755 "${SHED_FAKE_ROOT}${SHED_PKG_DEFAULTS_INSTALL_DIR}/etc" &&
+install -vdm755 "${SHED_FAKE_ROOT}${SHED_PKG_DEFAULTS_INSTALL_DIR}/etc" &&
 install -v -m644 "${SHED_PKG_CONTRIB_DIR}/passwd" "${SHED_FAKE_ROOT}${SHED_PKG_DEFAULTS_INSTALL_DIR}/etc" &&
 install -v -m644 "${SHED_PKG_CONTRIB_DIR}/group" "${SHED_FAKE_ROOT}${SHED_PKG_DEFAULTS_INSTALL_DIR}/etc" &&
 # Default hostname and hosts
