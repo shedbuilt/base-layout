@@ -10,6 +10,7 @@ mkdir -pv "${SHED_FAKE_ROOT}"/{media/{floppy,cdrom},sbin,srv,var} &&
 install -dv -m 0750 "${SHED_FAKE_ROOT}/root" &&
 install -dv -m 1777 "${SHED_FAKE_ROOT}/tmp" "${SHED_FAKE_ROOT}/var/tmp" &&
 mkdir -pv "${SHED_FAKE_ROOT}"/usr/{,local/}{bin,include,lib,sbin,src} &&
+mkdir -v "${SHED_FAKE_ROOT}"/usr/lib/pkgconfig &&
 mkdir -pv "${SHED_FAKE_ROOT}"/usr/{,local/}share/{color,defaults,dict,doc,info,locale,man,misc,terminfo,zoneinfo} &&
 mkdir -v  "${SHED_FAKE_ROOT}"/usr/libexec &&
 mkdir -pv "${SHED_FAKE_ROOT}"/usr/{,local/}share/man/man{1..8} &&
@@ -50,13 +51,7 @@ if [ -n "${SHED_PKG_LOCAL_OPTIONS[bootstrap]}" ]; then
         done
         ln -svf /tools/include/blkid "${SHED_FAKE_ROOT}/usr/include" &&
         ln -svf /tools/include/libmount "${SHED_FAKE_ROOT}/usr/include" &&
-        ln -svf /tools/include/uuid "${SHED_FAKE_ROOT}/usr/include" &&
-        install -vdm755 "${SHED_FAKE_ROOT}/usr/lib/pkgconfig" || exit 1
-        for SHED_PKG_LOCAL_LIB in blkid mount uuid
-        do
-            sed 's@tools@usr@g' /tools/lib/pkgconfig/${SHED_PKG_LOCAL_LIB}.pc \
-                > "${SHED_FAKE_ROOT}/usr/lib/pkgconfig/${SHED_PKG_LOCAL_LIB}.pc" || exit 1
-        done
+        ln -svf /tools/include/uuid "${SHED_FAKE_ROOT}/usr/include" || exit 1
         ln -sv bash "${SHED_FAKE_ROOT}/bin/sh" || exit 1
 else
         # NOTE: In 'bootstrap' this is done as a post-install step because we need
